@@ -1,87 +1,420 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>React Playground</title>
-    <script src="https://cdn.abacusai-usercontent.com/react/17/umd/react.production.min.js"></script>
-    <script src="https://cdn.abacusai-usercontent.com/react-dom/17/umd/react-dom.production.min.js"></script>
-    <script src="https://cdn.abacusai-usercontent.com/babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.abacusai-usercontent.com/prop-types/15.7.2/prop-types.min.js"></script>
-    <script src="https://cdn.abacusai-usercontent.com/recharts/2.5.0/umd/Recharts.min.js"></script>
-    <script src="https://cdn.abacusai-usercontent.com/material-ui/core/4.12.4/umd/material-ui.development.js"></script>
-    <link href="https://cdn.abacusai-usercontent.com/tailwindcss/2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdn.abacusai-usercontent.com/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>DnD Character Creator</title>
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        #error-container {
-            color: orange;
-            font-size: 16px;
-            margin: 12px;
-            min-height: 120px;
-            overflow-y: auto;
-            border: 1px solid orange;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: #ff96000d;
-            display: none;
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Spectral:ital,wght@0,400;0,700;1,400&display=swap');
+
+        body {
+            background-color: #0f0a07;
+            color: #e2d1b0;
+            font-family: 'Spectral', serif;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(45, 30, 20, 0.3) 0%, transparent 100%),
+                url('https://www.transparenttextures.com/patterns/dark-leather.png');
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .title-font {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+        }
+
+        .gold-shimmer {
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 5s infinite linear;
+            background-size: 200% auto;
+        }
+
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+
+        .parchment {
+            background: #f4e4bc;
+            background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+            color: #2d1e14;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 100px rgba(184, 134, 11, 0.2);
+            border: 2px solid #8b6b23;
+            position: relative;
+        }
+
+        .parchment::before {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px solid #8b6b23;
+            pointer-events: none;
+        }
+
+        .card-glow:hover {
+            box-shadow: 0 0 20px rgba(184, 134, 11, 0.4);
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+
+        .selected-card {
+            border: 3px solid #bf953f !important;
+            box-shadow: 0 0 25px rgba(184, 134, 11, 0.6);
+            transform: scale(1.02);
+        }
+
+        .ember {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #ff4d00;
+            border-radius: 50%;
+            pointer-events: none;
+            filter: blur(1px);
+            opacity: 0;
+            animation: rise 5s infinite ease-out;
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(100vh) scale(1); opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { transform: translateY(-100px) translateX(100px) scale(0); opacity: 0; }
+        }
+
+        .btn-fancy {
+            background: linear-gradient(135deg, #8b6b23 0%, #bf953f 50%, #8b6b23 100%);
+            border: 1px solid #fcf6ba;
+            color: #2d1e14;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .btn-fancy:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 0 15px rgba(184, 134, 11, 0.5);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #2d1e14;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b6b23, #fcf6ba);
+            transition: width 0.5s ease;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; color: black; }
+            .parchment { box-shadow: none; border: 1px solid black; background: white; }
         }
     </style>
 </head>
 <body>
-    <div id="artifact_react"></div>
-    <div id="error-container"></div>
+    <div id="root"></div>
+
     <script type="text/babel">
-        try {
-            function App(){const[step,setStep]=React.useState(0);const[race,setRace]=React.useState(null);const[klass,setKlass]=React.useState(null);const[bg,setBg]=React.useState(null);const[stats,setStats]=React.useState({STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10});const[pointsLeft,setPointsLeft]=React.useState(27);const[name,setName]=React.useState("");const[look,setLook]=React.useState({hair:"",eyes:"",skin:"",trait:""});const[align,setAlign]=React.useState("Нейтрально-добрый");const[rollAnim,setRollAnim]=React.useState(false);
-const Pt=({id})=>{const G={human:["#fde68a","#92400e"],elf:["#dcfce7","#166534"],dwarf:["#fed7aa","#7c2d12"],halfling:["#fef3c7","#a16207"],tiefling:["#fca5a5","#7f1d1d"],dragonborn:["#fcd34d","#78350f"],halforc:["#86efac","#14532d"],gnome:["#fef3c7","#3730a3"]};const[c1,c2]=G[id]||["#fde68a","#92400e"];const gid="gp_"+id;const E={human:<g><path d="M30 40 Q50 20 70 40 L70 35 Q50 15 30 35 Z" fill="#3b2410"/><circle cx="40" cy="50" r="3" fill="#1a0f08"/><circle cx="60" cy="50" r="3" fill="#1a0f08"/><path d="M40 65 Q50 70 60 65" stroke="#3b2410" strokeWidth="2" fill="none"/></g>,elf:<g><path d="M25 30 Q50 10 75 30 L72 25 Q50 5 28 25 Z" fill="#fbbf24"/><path d="M22 45 L18 32 L26 42" fill="#fde68a"/><path d="M78 45 L82 32 L74 42" fill="#fde68a"/><circle cx="40" cy="52" r="3" fill="#15803d"/><circle cx="60" cy="52" r="3" fill="#15803d"/><path d="M42 68 Q50 72 58 68" stroke="#3b2410" strokeWidth="2" fill="none"/></g>,dwarf:<g><path d="M25 35 Q50 20 75 35 L70 30 Q50 18 30 30 Z" fill="#a16207"/><circle cx="40" cy="48" r="3" fill="#1a0f08"/><circle cx="60" cy="48" r="3" fill="#1a0f08"/><path d="M28 60 Q50 95 72 60 Q60 78 50 78 Q40 78 28 60" fill="#a16207"/></g>,halfling:<g><path d="M28 42 Q50 25 72 42 Q50 30 28 42 Z" fill="#92400e"/><circle cx="40" cy="55" r="3" fill="#1a0f08"/><circle cx="60" cy="55" r="3" fill="#1a0f08"/><path d="M40 70 Q50 78 60 70" stroke="#3b2410" strokeWidth="2" fill="none"/></g>,tiefling:<g><path d="M25 30 Q35 10 40 30 Z" fill="#1a0f08"/><path d="M75 30 Q65 10 60 30 Z" fill="#1a0f08"/><path d="M30 45 Q50 30 70 45" fill="#1a0f08"/><circle cx="40" cy="52" r="3" fill="#fbbf24"/><circle cx="60" cy="52" r="3" fill="#fbbf24"/><path d="M40 70 Q50 75 60 70" stroke="#1a0f08" strokeWidth="2" fill="none"/></g>,dragonborn:<g><path d="M30 35 L35 30 L40 35 L45 30 L50 35 L55 30 L60 35 L65 30 L70 35" stroke="#451a03" strokeWidth="2" fill="none"/><circle cx="38" cy="48" r="3" fill="#dc2626"/><circle cx="62" cy="48" r="3" fill="#dc2626"/><path d="M35 65 L65 65 L60 75 L40 75 Z" fill="#451a03"/></g>,halforc:<g><path d="M28 35 Q50 20 72 35 Q50 25 28 35 Z" fill="#1a0f08"/><circle cx="40" cy="50" r="3" fill="#dc2626"/><circle cx="60" cy="50" r="3" fill="#dc2626"/><path d="M42 72 L46 78 L46 72 M58 72 L54 78 L54 72" fill="#fef3c7" stroke="#1a0f08" strokeWidth="0.5"/></g>,gnome:<g><path d="M20 35 L50 5 L80 35 Z" fill="#dc2626"/><circle cx="40" cy="55" r="3" fill="#1a0f08"/><circle cx="60" cy="55" r="3" fill="#1a0f08"/><path d="M30 70 Q50 90 70 70 Q60 75 50 75 Q40 75 30 70" fill="#fef3c7"/></g>};return<svg viewBox="0 0 100 100" className="w-full h-full"><defs><radialGradient id={gid} cx="50%" cy="40%"><stop offset="0%" stopColor={c1}/><stop offset="100%" stopColor={c2}/></radialGradient></defs><circle cx="50" cy="50" r="48" fill={`url(#${gid})`}/>{E[id]}</svg>};
-const Ci=({id})=>{const I={fighter:<g><circle cx="50" cy="50" r="45" fill="#7c2d12"/><path d="M50 15 L55 60 L50 90 L45 60 Z" fill="#e5e7eb"/><path d="M30 55 L70 55 L65 60 L35 60 Z" fill="#a16207"/></g>,wizard:<g><circle cx="50" cy="50" r="45" fill="#312e81"/><path d="M50 20 L65 70 L35 70 Z" fill="#1e1b4b"/><circle cx="50" cy="20" r="4" fill="#fbbf24"/><circle cx="50" cy="50" r="3" fill="#fbbf24"><animate attributeName="r" values="3;6;3" dur="1.5s" repeatCount="indefinite"/></circle></g>,rogue:<g><circle cx="50" cy="50" r="45" fill="#1f2937"/><path d="M50 25 L55 70 L50 80 L45 70 Z" fill="#9ca3af"/><path d="M40 40 L60 40 L55 45 L45 45 Z" fill="#a16207"/></g>,cleric:<g><circle cx="50" cy="50" r="45" fill="#fbbf24"/><path d="M45 25 L55 25 L55 45 L75 45 L75 55 L55 55 L55 80 L45 80 L45 55 L25 55 L25 45 L45 45 Z" fill="#fef3c7"/><circle cx="50" cy="50" r="20" fill="none" stroke="#fef3c7" strokeWidth="1" opacity="0.6"><animate attributeName="r" values="20;30;20" dur="2s" repeatCount="indefinite"/></circle></g>,ranger:<g><circle cx="50" cy="50" r="45" fill="#166534"/><path d="M30 30 Q50 50 30 70" stroke="#fbbf24" strokeWidth="3" fill="none"/><path d="M30 50 L75 50" stroke="#92400e" strokeWidth="2"/><path d="M65 45 L78 50 L65 55 Z" fill="#9ca3af"/></g>,barbarian:<g><circle cx="50" cy="50" r="45" fill="#7f1d1d"/><path d="M30 30 L40 50 L30 70" stroke="#92400e" strokeWidth="4" fill="none"/><path d="M50 20 L55 50 L45 50 Z" fill="#9ca3af"/><path d="M35 45 L65 45 L60 55 L40 55 Z" fill="#9ca3af"/></g>,bard:<g><circle cx="50" cy="50" r="45" fill="#9d174d"/><ellipse cx="50" cy="60" rx="20" ry="25" fill="#92400e"/><circle cx="50" cy="60" r="6" fill="#1a0f08"/><path d="M50 35 L50 20" stroke="#92400e" strokeWidth="2"/></g>,paladin:<g><circle cx="50" cy="50" r="45" fill="#fbbf24"/><path d="M50 20 L70 30 L70 55 Q70 75 50 85 Q30 75 30 55 L30 30 Z" fill="#e5e7eb"/><path d="M45 40 L55 40 L55 55 L65 55 L65 60 L55 60 L55 75 L45 75 L45 60 L35 60 L35 55 L45 55 Z" fill="#fbbf24"/></g>,warlock:<g><circle cx="50" cy="50" r="45" fill="#581c87"/><circle cx="50" cy="50" r="20" fill="#1e1b4b"/><circle cx="50" cy="50" r="8" fill="#fbbf24"><animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite"/></circle><circle cx="50" cy="50" r="3" fill="#1a0f08"/></g>,druid:<g><circle cx="50" cy="50" r="45" fill="#14532d"/><path d="M50 25 Q35 40 35 55 Q35 70 50 75 Q65 70 65 55 Q65 40 50 25 Z" fill="#86efac"/><path d="M50 25 L50 75" stroke="#166534" strokeWidth="1"/></g>};return<svg viewBox="0 0 100 100" className="w-full h-full">{I[id]}</svg>};
-const races=[{id:"human",name:"Человек",bonus:"+1 ко всем",desc:"Универсал. Подходит под любой класс.",lore:"Амбициозные, адаптивные. Самая многочисленная раса.",color:"#92400e"},{id:"elf",name:"Эльф",bonus:"+2 Ловкость",desc:"Грациозные мастера лука и магии.",lore:"Долгожители (700+ лет). Видят в темноте.",color:"#166534"},{id:"dwarf",name:"Дварф",bonus:"+2 Телосложение",desc:"Крепкие воины гор, мастера кузни.",lore:"Гордые, верные. Сопротивление ядам.",color:"#7c2d12"},{id:"halfling",name:"Полурослик",bonus:"+2 Ловкость",desc:"Маленькие, удачливые, незаметные.",lore:"Везунчики, перебрасывают 1 на кубе.",color:"#a16207"},{id:"tiefling",name:"Тифлинг",bonus:"+2 Харизма, +1 Инт",desc:"Потомки демонов с рогами и хвостом.",lore:"Изгои с дьявольской кровью. Сопр. огню.",color:"#7f1d1d"},{id:"dragonborn",name:"Драконорождённый",bonus:"+2 Сила, +1 Хар",desc:"Чешуя и дыхание стихии.",lore:"Дышат огнём/льдом/ядом — выбор стихии.",color:"#78350f"},{id:"halforc",name:"Полуорк",bonus:"+2 Сила, +1 Тел",desc:"Сильные, свирепые воины.",lore:"Не падает от смертельного удара (1 раз/отдых).",color:"#14532d"},{id:"gnome",name:"Гном",bonus:"+2 Интеллект",desc:"Маленькие изобретатели и маги.",lore:"Сопротивление ментальной магии.",color:"#3730a3"}];
-const classes=[{id:"fighter",name:"Воин",desc:"Мастер оружия и брони.",can:["⚔️ Любое оружие, тяжёлая броня","💥 Доп. атаки за раунд","💚 Второе дыхание (лечит)","⚡ Action Surge"],stat:"Сила или Ловкость",hp:"10",color:"#7c2d12"},{id:"wizard",name:"Волшебник",desc:"Учёный маг с книгой заклинаний.",can:["🔥 Огненный шар","✨ Магическая стрела","🛡️ Щит, невидимость","📖 Учит из свитков"],stat:"Интеллект",hp:"6",color:"#312e81"},{id:"rogue",name:"Плут",desc:"Скрытность, кинжалы в спину.",can:["💥 Скрытая атака (+урон)","🔓 Воровство, взлом","💨 Хитрое действие","🌑 Скрытность в тени"],stat:"Ловкость",hp:"8",color:"#1f2937"},{id:"cleric",name:"Жрец",desc:"Слуга бога: лечит и бьёт нежить.",can:["💚 Лечение ран","☀️ Изгнание нежити","🙏 Благословение","⚡ Боевая магия"],stat:"Мудрость",hp:"8",color:"#a16207"},{id:"ranger",name:"Следопыт",desc:"Охотник, лучник, друг природы.",can:["🏹 Меткая стрельба","🐺 Спутник-зверь","🌲 Следопытство","🌿 Природная магия"],stat:"Ловкость + Мудрость",hp:"10",color:"#166534"},{id:"barbarian",name:"Варвар",desc:"Ярость! Тонна HP, безумный урон.",can:["😡 Ярость","🪓 Гигантский топор","💢 Безрассудная атака","🛡️ Не падает от 1 удара"],stat:"Сила",hp:"12",color:"#7f1d1d"},{id:"bard",name:"Бард",desc:"Музыкант-маг, душа компании.",can:["🎶 Вдохновение союзников","💋 Очарование","💚 Лечение песней","🎓 Знает понемногу всего"],stat:"Харизма",hp:"8",color:"#9d174d"},{id:"paladin",name:"Паладин",desc:"Святой воин с аурой защиты.",can:["⚡ Божественная кара","💚 Возложение рук","🛡️ Аура защиты","⚔️ Тяжёлая броня + меч"],stat:"Сила + Харизма",hp:"10",color:"#b45309"},{id:"warlock",name:"Колдун",desc:"Пакт с потусторонней силой.",can:["💜 Магический луч","👁️ Договор с покровителем","🌑 Проклятия","🦇 Фамильяр"],stat:"Харизма",hp:"8",color:"#581c87"},{id:"druid",name:"Друид",desc:"Маг природы, оборотень.",can:["🐻 Превращение в животное","🌪️ Магия стихий","💚 Лечение","🌳 Управление растениями"],stat:"Мудрость",hp:"8",color:"#14532d"}];
-const backgrounds=[{id:"soldier",name:"Солдат",icon:"🎖️",desc:"Служил в армии. Дисциплина."},{id:"criminal",name:"Преступник",icon:"🃏",desc:"Жил вне закона. Связи."},{id:"sage",name:"Мудрец",icon:"📚",desc:"Учёный, знаток древностей."},{id:"folk",name:"Простолюдин",icon:"🌾",desc:"Из деревни. Честный, работящий."},{id:"noble",name:"Благородный",icon:"👑",desc:"Знатный род. Манеры, связи."},{id:"outlander",name:"Чужеземец",icon:"🏔️",desc:"Жил в дикой природе."},{id:"entertainer",name:"Артист",icon:"🎭",desc:"Любимец толпы."},{id:"acolyte",name:"Послушник",icon:"⛪",desc:"Служил в храме."}];
-const aligns=["Законно-добрый","Нейтрально-добрый","Хаотично-добрый","Законно-нейтральный","Истинно нейтральный","Хаотично-нейтральный","Законно-злой","Нейтрально-злой","Хаотично-злой"];
-const cost={8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
-function changeStat(k,d){const cur=stats[k],nx=cur+d;if(nx<8||nx>15)return;const df=cost[nx]-cost[cur];if(pointsLeft-df<0)return;setStats({...stats,[k]:nx});setPointsLeft(pointsLeft-df)}
-function rollStats(){setRollAnim(true);let n=0;const i=setInterval(()=>{setStats({STR:8+Math.floor(Math.random()*8),DEX:8+Math.floor(Math.random()*8),CON:8+Math.floor(Math.random()*8),INT:8+Math.floor(Math.random()*8),WIS:8+Math.floor(Math.random()*8),CHA:8+Math.floor(Math.random()*8)});n++;if(n>10){clearInterval(i);const f={STR:13,DEX:14,CON:14,INT:10,WIS:12,CHA:10};if(klass){const m={fighter:"STR",wizard:"INT",rogue:"DEX",cleric:"WIS",ranger:"DEX",barbarian:"STR",bard:"CHA",paladin:"STR",warlock:"CHA",druid:"WIS"}[klass.id];f[m]=15}setStats(f);setPointsLeft(0);setRollAnim(false)}},80)}
-function fStat(k){let v=stats[k];if(!race)return v;const b={human:{STR:1,DEX:1,CON:1,INT:1,WIS:1,CHA:1},elf:{DEX:2},dwarf:{CON:2},halfling:{DEX:2},tiefling:{CHA:2,INT:1},dragonborn:{STR:2,CHA:1},halforc:{STR:2,CON:1},gnome:{INT:2}};return v+(b[race.id]?.[k]||0)}
-const md=v=>Math.floor((v-10)/2);const mdS=v=>{const m=md(v);return m>=0?`+${m}`:`${m}`};
-const sN={STR:"Сила",DEX:"Ловкость",CON:"Телосложение",INT:"Интеллект",WIS:"Мудрость",CHA:"Харизма"};const sI={STR:"💪",DEX:"🏃",CON:"❤️",INT:"🧠",WIS:"👁️",CHA:"✨"};const sD={STR:"Урон в ближнем бою",DEX:"Стрельба, скрытность, КЗ",CON:"HP, выносливость",INT:"Магия волшебника",WIS:"Магия жреца/друида",CHA:"Магия барда/колдуна"};
-const steps=["Раса","Класс","Статы","История","Облик","Лист"];
-const canNext=()=>{if(step===0)return!!race;if(step===1)return!!klass;if(step===2)return pointsLeft===0;if(step===3)return!!bg;if(step===4)return name.trim().length>0;return true};
-const mainStat=klass&&{fighter:["STR","DEX"],wizard:["INT"],rogue:["DEX"],cleric:["WIS"],ranger:["DEX","WIS"],barbarian:["STR"],bard:["CHA"],paladin:["STR","CHA"],warlock:["CHA"],druid:["WIS"]}[klass.id];
-return(<div className="min-h-screen p-3 md:p-8 relative overflow-hidden" style={{background:"radial-gradient(ellipse at top,#3a2418,#1a0f08 60%,#000)",fontFamily:"Georgia,serif"}}>
-<style>{`@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}@keyframes glow{0%,100%{filter:drop-shadow(0 0 5px #fbbf24)}50%{filter:drop-shadow(0 0 20px #fbbf24)}}@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}@keyframes pulseB{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.7)}50%{box-shadow:0 0 0 12px rgba(251,191,36,0)}}@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}@keyframes ember{0%{transform:translateY(0) scale(1);opacity:.8}100%{transform:translateY(-100vh) scale(0);opacity:0}}.ember{position:absolute;bottom:-10px;width:4px;height:4px;background:#fbbf24;border-radius:50%;animation:ember 8s linear infinite;box-shadow:0 0 8px #fbbf24;pointer-events:none}.stepC{animation:slideIn .5s ease-out}.cardH{transition:all .3s}.cardH:hover{transform:translateY(-6px) scale(1.03);box-shadow:0 15px 30px rgba(0,0,0,.5),0 0 20px rgba(251,191,36,.3)}.sel{animation:pulseB 2s infinite}.gold{background:linear-gradient(90deg,#92400e,#fbbf24,#92400e);background-size:200% 100%;animation:shimmer 3s infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent}.roll{animation:shake .1s infinite}.floaty{animation:float 4s ease-in-out infinite}.glowing{animation:glow 2s ease-in-out infinite}.paper{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3CfeColorMatrix values='0 0 0 0 .6 0 0 0 0 .4 0 0 0 0 .2 0 0 0 .15 0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)'/%3E%3C/svg%3E"),linear-gradient(135deg,#f5e6c8,#e8d4a8)}@media print{.noprint{display:none!important}}`}</style>
-{[...Array(15)].map((_,i)=><div key={i} className="ember" style={{left:`${Math.random()*100}%`,animationDelay:`${Math.random()*8}s`,animationDuration:`${5+Math.random()*5}s`}}/>)}
-<div className="max-w-6xl mx-auto rounded-2xl p-4 md:p-10 paper relative" style={{border:"6px double #92400e",boxShadow:"0 0 40px rgba(251,191,36,.3),inset 0 0 20px rgba(146,64,14,.2)"}}>
-<div className="absolute top-2 left-2 text-3xl text-amber-900 opacity-60">❦</div><div className="absolute top-2 right-2 text-3xl text-amber-900 opacity-60">❦</div><div className="absolute bottom-2 left-2 text-3xl text-amber-900 opacity-60">❦</div><div className="absolute bottom-2 right-2 text-3xl text-amber-900 opacity-60">❦</div>
-<div className="text-center mb-6 noprint"><div className="text-5xl mb-2 floaty inline-block">⚔️</div><h1 className="text-3xl md:text-5xl font-bold gold">Создание Героя</h1><div className="flex items-center justify-center gap-3 mt-2"><div className="h-px bg-amber-900 flex-1 max-w-xs"/><p className="text-amber-800 italic">Dungeons & Dragons</p><div className="h-px bg-amber-900 flex-1 max-w-xs"/></div></div>
-<div className="flex justify-between items-center mb-8 relative noprint px-2"><div className="absolute top-4 left-4 right-4 h-1 bg-amber-200"/><div className="absolute top-4 left-4 h-1 bg-gradient-to-r from-amber-700 to-amber-500 transition-all duration-500" style={{width:`calc(${(step/(steps.length-1))*100}% - 8px)`}}/>{steps.map((s,i)=>(<div key={i} className="flex flex-col items-center z-10"><div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 font-bold text-sm transition-all ${i<step?"bg-amber-700 text-amber-50 border-amber-900":i===step?"bg-red-900 text-amber-50 border-amber-900 scale-125":"bg-amber-100 text-amber-700 border-amber-400"}`}>{i<step?"✓":i+1}</div><span className="text-xs mt-1 text-amber-900 hidden md:inline font-bold">{s}</span></div>))}</div>
-{step===0&&<div className="stepC"><h2 className="text-2xl font-bold text-amber-900 mb-1 text-center">Выбери расу</h2><p className="text-amber-800 mb-6 italic text-center">Раса определяет внешность, бонусы и особенности</p><div className="grid grid-cols-2 md:grid-cols-4 gap-4">{races.map(r=>(<div key={r.id} onClick={()=>setRace(r)} className={`cardH rounded-xl border-2 cursor-pointer p-3 ${race?.id===r.id?"sel":""}`} style={{borderColor:race?.id===r.id?"#fbbf24":"#92400e",background:race?.id===r.id?`linear-gradient(135deg,${r.color}33,#fde68a)`:"#fef3c7",borderWidth:race?.id===r.id?"3px":"2px"}}><div className="aspect-square rounded-lg overflow-hidden mb-2 border-2 border-amber-800"><Pt id={r.id}/></div><div className="font-bold text-center text-amber-900">{r.name}</div><div className="text-xs font-bold text-center mt-1 px-2 py-1 rounded" style={{background:r.color,color:"#fef3c7"}}>{r.bonus}</div><div className="text-xs text-amber-800 mt-2 text-center">{r.desc}</div></div>))}</div>{race&&<div className="mt-6 p-4 rounded-lg border-2 stepC" style={{background:`linear-gradient(135deg,${race.color}22,#fde68a)`,borderColor:race.color}}><div className="flex items-center gap-3"><div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-900 flex-shrink-0"><Pt id={race.id}/></div><div><div className="font-bold text-amber-900 text-lg">{race.name}</div><div className="text-sm text-amber-800 italic">{race.lore}</div></div></div></div>}</div>}
-{step===1&&<div className="stepC"><h2 className="text-2xl font-bold text-amber-900 mb-1 text-center">Выбери класс</h2><p className="text-amber-800 mb-6 italic text-center">Класс — профессия героя в бою</p><div className="grid grid-cols-2 md:grid-cols-5 gap-3">{classes.map(c=>(<div key={c.id} onClick={()=>setKlass(c)} className={`cardH rounded-xl border-2 cursor-pointer p-3 ${klass?.id===c.id?"sel":""}`} style={{borderColor:klass?.id===c.id?"#fbbf24":"#92400e",background:klass?.id===c.id?`linear-gradient(135deg,${c.color}33,#fde68a)`:"#fef3c7",borderWidth:klass?.id===c.id?"3px":"2px"}}><div className="aspect-square rounded-lg overflow-hidden mb-2"><Ci id={c.id}/></div><div className="font-bold text-center text-amber-900 text-sm">{c.name}</div><div className="text-xs text-amber-800 mt-1 text-center">{c.desc}</div></div>))}</div>{klass&&<div className="mt-6 p-4 rounded-lg border-2 stepC" style={{background:`linear-gradient(135deg,${klass.color}22,#fde68a)`,borderColor:klass.color}}><div className="flex items-start gap-4 flex-wrap md:flex-nowrap"><div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-amber-900 flex-shrink-0 glowing"><Ci id={klass.id}/></div><div className="flex-1"><div className="font-bold text-amber-900 text-xl">{klass.name}</div><div className="text-sm text-amber-800 italic mb-2">{klass.desc}</div><div className="grid grid-cols-1 md:grid-cols-2 gap-3"><div><div className="text-xs font-bold text-amber-900 mb-1">⚡ ЧТО УМЕЕТ:</div><ul className="text-sm text-amber-800 space-y-1">{klass.can.map((x,i)=><li key={i}>{x}</li>)}</ul></div><div className="text-sm text-amber-800 space-y-1"><div className="p-2 rounded bg-amber-100 border border-amber-700"><b>🎯 Главная характеристика:</b><br/>{klass.stat}</div><div className="p-2 rounded bg-amber-100 border border-amber-700"><b>❤️ Кость хитов:</b> d{klass.hp}</div></div></div></div></div></div>}</div>}
-{step===2&&<div className="stepC"><h2 className="text-2xl font-bold text-amber-900 mb-1 text-center">Распредели характеристики</h2><p className="text-amber-800 mb-3 italic text-center">27 очков. Min 8, max 15.</p><div className="flex justify-center items-center gap-3 mb-4 flex-wrap"><div className={`text-center px-6 py-2 rounded-full border-2 border-amber-900 bg-amber-900 text-amber-50 font-bold ${pointsLeft===0?"opacity-60":""}`}>Очков: <span className="text-2xl">{pointsLeft}</span> / 27</div><button onClick={rollStats} disabled={rollAnim} className="px-4 py-2 rounded-full bg-red-900 text-amber-50 font-bold hover:bg-red-800 disabled:opacity-50">🎲 Авто-раскидать</button></div><div className="grid grid-cols-1 md:grid-cols-2 gap-3">{Object.keys(stats).map(k=>{const isM=mainStat?.includes(k);return<div key={k} className={`p-3 rounded-lg border-2 ${rollAnim?"roll":""}`} style={{borderColor:isM?"#fbbf24":"#92400e",background:isM?"linear-gradient(135deg,#fef3c7,#fde68a)":"#fef9e7"}}><div className="flex justify-between items-center"><div className="flex-1"><div className="font-bold text-amber-900 flex items-center gap-2 flex-wrap"><span className="text-2xl">{sI[k]}</span>{sN[k]}{isM&&<span className="text-xs px-2 py-0.5 rounded-full bg-amber-700 text-amber-50">★ главная</span>}</div><div className="text-xs text-amber-700">{sD[k]}</div></div><div className="flex items-center gap-2"><button onClick={()=>changeStat(k,-1)} className="w-9 h-9 rounded-full bg-amber-700 text-amber-50 font-bold hover:bg-amber-800 active:scale-90">−</button><div className="text-3xl font-bold text-amber-900 w-12 text-center">{stats[k]}</div><button onClick={()=>changeStat(k,1)} className="w-9 h-9 rounded-full bg-amber-700 text-amber-50 font-bold hover:bg-amber-800 active:scale-90">+</button></div></div><div className="text-xs text-amber-800 mt-2 flex justify-between"><span>С расой: <b className="text-base">{fStat(k)}</b></span><span>Мод: <b className="text-base text-red-800">{mdS(fStat(k))}</b></span></div></div>})}</div><div className="text-xs text-amber-700 italic mt-3 text-center">💡 Главную до 15. Потом CON для здоровья.</div></div>}
-{step===3&&<div className="stepC"><h2 className="text-2xl font-bold text-amber-900 mb-1 text-center">Предыстория & мировоззрение</h2><p className="text-amber-800 mb-6 italic text-center">Кем был герой до приключений?</p><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">{backgrounds.map(b=>(<div key={b.id} onClick={()=>setBg(b)} className={`cardH rounded-xl border-2 cursor-pointer p-4 text-center ${bg?.id===b.id?"sel":""}`} style={{borderColor:bg?.id===b.id?"#fbbf24":"#92400e",background:bg?.id===b.id?"#fde68a":"#fef3c7"}}><div className="text-4xl mb-2">{b.icon}</div><div className="font-bold text-amber-900">{b.name}</div><div className="text-xs text-amber-800 mt-1">{b.desc}</div></div>))}</div><div className="p-4 rounded-lg border-2 border-amber-900 bg-amber-50"><div className="font-bold text-amber-900 mb-3 text-center">⚖️ Мировоззрение</div><div className="grid grid-cols-3 gap-2">{aligns.map(a=>(<button key={a} onClick={()=>setAlign(a)} className="p-2 rounded text-xs md:text-sm transition-all hover:scale-105" style={{background:align===a?"linear-gradient(135deg,#7c2d12,#92400e)":"#fef3c7",color:align===a?"#fef3c7":"#7c2d12",border:`2px solid ${align===a?"#fbbf24":"#92400e"}`,fontWeight:align===a?"bold":"normal"}}>{a}</button>))}</div></div></div>}
-{step===4&&<div className="stepC"><h2 className="text-2xl font-bold text-amber-900 mb-1 text-center">Имя и внешность</h2><p className="text-amber-800 mb-6 italic text-center">Это нужно для будущей фигурки!</p><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><label className="block"><span className="text-amber-900 font-bold">⚜️ Имя героя</span><input value={name} onChange={e=>setName(e.target.value)} placeholder="напр. Торин Огнебород" className="w-full mt-1 p-2 rounded border-2 border-amber-700 bg-amber-50"/></label><label className="block"><span className="text-amber-900 font-bold">💇 Волосы</span><input value={look.hair} onChange={e=>setLook({...look,hair:e.target.value})} placeholder="чёрные длинные с косой" className="w-full mt-1 p-2 rounded border-2 border-amber-700 bg-amber-50"/></label><label className="block"><span className="text-amber-900 font-bold">👁️ Глаза</span><input value={look.eyes} onChange={e=>setLook({...look,eyes:e.target.value})} placeholder="зелёные" className="w-full mt-1 p-2 rounded border-2 border-amber-700 bg-amber-50"/></label><label className="block"><span className="text-amber-900 font-bold">🩸 Кожа / шрамы / тату</span><input value={look.skin} onChange={e=>setLook({...look,skin:e.target.value})} placeholder="бледная, шрам на щеке" className="w-full mt-1 p-2 rounded border-2 border-amber-700 bg-amber-50"/></label><label className="block md:col-span-2"><span className="text-amber-900 font-bold">✨ Особая черта / фишка</span><input value={look.trait} onChange={e=>setLook({...look,trait:e.target.value})} placeholder="всегда жуёт травинку, никому не доверяет" className="w-full mt-1 p-2 rounded border-2 border-amber-700 bg-amber-50"/></label></div>{race&&<div className="mt-6 flex items-center justify-center gap-4 p-4 rounded-lg border-2 border-amber-900 bg-amber-50 flex-wrap"><div className="w-24 h-24 rounded-full overflow-hidden border-4 border-amber-700 glowing"><Pt id={race.id}/></div><div className="text-amber-900"><div className="text-sm italic">Твой герой:</div><div className="text-xl font-bold">{name||"..."}</div><div className="text-sm">{race.name} {klass?.name}</div></div></div>}</div>}
-{step===5&&<div className="stepC"><h2 className="text-3xl font-bold text-amber-900 mb-4 text-center gold">📜 Лист персонажа 📜</h2><div className="border-4 border-amber-900 rounded-lg p-4 md:p-6 bg-amber-50" style={{boxShadow:"inset 0 0 30px rgba(146,64,14,.2)"}}><div className="flex flex-col md:flex-row items-center gap-4 border-b-2 border-amber-700 pb-4 mb-4">{race&&<div className="w-24 h-24 rounded-full overflow-hidden border-4 border-amber-700 flex-shrink-0 glowing"><Pt id={race.id}/></div>}<div className="text-center md:text-left flex-1"><div className="text-3xl font-bold text-amber-900">{name||"Безымянный"}</div><div className="text-amber-800">{race?.name} • {klass?.name} • 1 уровень</div><div className="text-sm text-amber-700 italic">{bg?.name} • {align}</div></div>{klass&&<div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-amber-900"><Ci id={klass.id}/></div>}</div><div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">{Object.keys(stats).map(k=>(<div key={k} className="text-center p-2 rounded border-2 border-amber-700 bg-amber-100"><div className="text-lg">{sI[k]}</div><div className="text-xs font-bold text-amber-900">{sN[k]}</div><div className="text-2xl font-bold text-red-800">{mdS(fStat(k))}</div><div className="text-sm text-amber-800">{fStat(k)}</div></div>))}</div><div className="grid grid-cols-3 gap-2 mb-4"><div className="text-center p-3 rounded border-2 border-red-900 bg-gradient-to-br from-red-100 to-amber-100"><div className="text-xs text-amber-900">❤️ HP</div><div className="text-2xl font-bold text-red-800">{klass?parseInt(klass.hp)+md(fStat("CON")):"—"}</div></div><div className="text-center p-3 rounded border-2 border-amber-900 bg-gradient-to-br from-amber-100 to-yellow-100"><div className="text-xs text-amber-900">⚡ Инициатива</div><div className="text-2xl font-bold text-amber-800">{mdS(fStat("DEX"))}</div></div><div className="text-center p-3 rounded border-2 border-amber-900 bg-gradient-to-br from-amber-100 to-yellow-100"><div className="text-xs text-amber-900">🎯 Бонус мастерства</div><div className="text-2xl font-bold text-amber-800">+2</div></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-3"><div className="p-3 rounded border-2 border-amber-700 bg-amber-100"><div className="font-bold text-amber-900 mb-1">⚔️ Способности класса</div><ul className="text-sm text-amber-800 list-disc pl-5">{klass?.can.map((x,i)=><li key={i}>{x}</li>)}</ul></div><div className="p-3 rounded border-2 border-amber-700 bg-amber-100"><div className="font-bold text-amber-900 mb-1">🎭 Внешность</div><div className="text-sm text-amber-800"><div><b>Волосы:</b> {look.hair||"—"}</div><div><b>Глаза:</b> {look.eyes||"—"}</div><div><b>Особенности:</b> {look.skin||"—"}</div><div><b>Черта:</b> {look.trait||"—"}</div></div></div></div><div className="mt-3 p-3 rounded border-2 border-amber-700 bg-amber-100"><div className="font-bold text-amber-900 mb-1">📖 Предыстория</div><div className="text-sm text-amber-800">{bg?.icon} {bg?.desc}</div></div><div className="text-center mt-4 italic text-amber-700">✦ Удачи в твоём первом приключении, герой! ✦</div></div><div className="text-center mt-4 flex gap-2 justify-center flex-wrap noprint"><button onClick={()=>window.print()} className="px-4 py-2 rounded bg-amber-900 text-amber-50 font-bold hover:bg-amber-800">🖨 Распечатать</button><button onClick={()=>{setStep(0);setRace(null);setKlass(null);setBg(null);setStats({STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10});setPointsLeft(27);setName("");setLook({hair:"",eyes:"",skin:"",trait:""})}} className="px-4 py-2 rounded bg-amber-700 text-amber-50 font-bold hover:bg-amber-600">↺ Заново</button></div></div>}
-<div className="flex justify-between mt-6 noprint"><button onClick={()=>setStep(Math.max(0,step-1))} disabled={step===0} className="px-5 py-2 rounded-lg bg-amber-800 text-amber-50 font-bold disabled:opacity-30 hover:bg-amber-700">← Назад</button>{step<5&&<button onClick={()=>setStep(step+1)} disabled={!canNext()} className="px-5 py-2 rounded-lg bg-red-900 text-amber-50 font-bold disabled:opacity-30 hover:bg-red-800">Далее →</button>}</div>
-</div></div>)}
-            ReactDOM.render(<App />, document.getElementById('artifact_react'));
-        } catch(error) {
-            displayError('An error occurred while loading the application.');
-        }
-        window.addEventListener('error', function(event) {
-            displayError(event.message, event.error?.stack);
-        });
-        function displayError(message, stackInfo) {
-            const errorContainer = document.getElementById('error-container');
-            const errorMessage = document.createElement('div');
-            errorMessage.textContent = message;
-            errorContainer.appendChild(errorMessage);
-            if(stackInfo) {
-                const stackErrorMessage = document.createElement('pre');
-                stackErrorMessage.textContent = stackInfo.substring(0, 130);
-                errorContainer.appendChild(stackErrorMessage);
-            }
-            errorContainer.style.display = 'block';
-        }
+        const { useState, useEffect } = React;
+
+        const RACES = [
+            { id: 'human', name: 'Человек', desc: '+1 ко всем характеристикам. Самая универсальная раса.', color: '#d2b48c' },
+            { id: 'elf', name: 'Эльф', desc: '+2 Ловкость, ночное зрение, сопротивление к очарованию.', color: '#90ee90' },
+            { id: 'dwarf', name: 'Дварф', desc: '+2 Телосложение, ночное зрение, устойчивость к яду.', color: '#cd853f' },
+            { id: 'halfling', name: 'Полурослик', desc: '+2 Ловкость, удачливость (переброс 1 на кубике).', color: '#ffebcd' },
+            { id: 'dragonborn', name: 'Драконорожденный', desc: '+2 Сила, +1 Харизма. Дыхание стихией.', color: '#b22222' },
+            { id: 'tiefling', name: 'Тифлинг', desc: '+2 Харизма, +1 Интеллект. Сопротивление огню.', color: '#4b0082' },
+            { id: 'gnome', name: 'Гном', desc: '+2 Интеллект, ночное зрение, хитрость гномов.', color: '#5f9ea0' },
+            { id: 'half-orc', name: 'Полуорк', desc: '+2 Сила, +1 Телосложение. Невероятная стойкость.', color: '#556b2f' }
+        ];
+
+        const CLASSES = [
+            { id: 'fighter', name: 'Воин', icon: 'fa-shield-halved', hitDie: 10, prime: 'Сила', desc: 'Мастер оружия и доспехов. Идеально для начала.' },
+            { id: 'wizard', name: 'Волшебник', icon: 'fa-hat-wizard', hitDie: 6, prime: 'Интеллект', desc: 'Могущественный маг, изучающий заклинания по книгам.' },
+            { id: 'rogue', name: 'Плут', icon: 'fa-mask', hitDie: 8, prime: 'Ловкость', desc: 'Мастер скрытности и точных ударов в спину.' },
+            { id: 'cleric', name: 'Жрец', icon: 'fa-cross', hitDie: 8, prime: 'Мудрость', desc: 'Божественный целитель и защитник союзников.' },
+            { id: 'barbarian', name: 'Варвар', icon: 'fa-axe', hitDie: 12, prime: 'Сила', desc: 'Яростный боец с огромным запасом здоровья.' },
+            { id: 'paladin', name: 'Паладин', icon: 'fa-shield-heart', hitDie: 10, prime: 'Сила/Харизма', desc: 'Святой рыцарь, сочетающий меч и магию.' },
+            { id: 'ranger', name: 'Следопыт', icon: 'fa-bow-arrow', hitDie: 10, prime: 'Ловкость/Мудрость', desc: 'Охотник, эксперт по выживанию в дикой природе.' },
+            { id: 'bard', name: 'Бард', icon: 'fa-music', hitDie: 8, prime: 'Харизма', desc: 'Музыкант, вдохновляющий друзей и мешающий врагам.' },
+            { id: 'sorcerer', name: 'Чародей', icon: 'fa-wand-magic-sparkles', hitDie: 6, prime: 'Харизма', desc: 'Маг, чья сила заложена в самой крови.' },
+            { id: 'warlock', name: 'Колдун', icon: 'fa-eye', hitDie: 8, prime: 'Харизма', desc: 'Черпает магию из договора с могущественным покровителем.' }
+        ];
+
+        const STATS = ['Сила', 'Ловкость', 'Телосложение', 'Интеллект', 'Мудрость', 'Харизма'];
+
+        const App = () => {
+            const [step, setStep] = useState(1);
+            const [char, setChar] = useState({
+                name: '',
+                race: null,
+                class: null,
+                stats: { 'Сила': 8, 'Ловкость': 8, 'Телосложение': 8, 'Интеллект': 8, 'Мудрость': 8, 'Харизма': 8 },
+                points: 27,
+                appearance: ''
+            });
+
+            const nextStep = () => setStep(step + 1);
+            const prevStep = () => setStep(step - 1);
+
+            const updateStat = (name, val) => {
+                const current = char.stats[name];
+                const cost = val > current ? (val > 13 ? 2 : 1) : (current > 13 ? 2 : 1);
+                const newPoints = val > current ? char.points - cost : char.points + cost;
+
+                if (newPoints >= 0 && val >= 8 && val <= 15) {
+                    setChar({...char, stats: {...char.stats, [name]: val}, points: newPoints});
+                }
+            };
+
+            const autoRoll = () => {
+                if (!char.class) return;
+                const scores = [15, 14, 13, 12, 10, 8];
+                const prime = char.class.prime.split('/')[0];
+                const newStats = {};
+
+                newStats[prime] = 15;
+                const remainingStats = STATS.filter(s => s !== prime);
+                const remainingScores = [14, 13, 12, 10, 8];
+
+                remainingStats.forEach((s, i) => {
+                    newStats[s] = remainingScores[i];
+                });
+
+                setChar({...char, stats: newStats, points: 0});
+            };
+
+            return (
+                <div className="min-h-screen p-4 md:p-8 flex flex-col items-center">
+                    {/* Эмберы на фоне */}
+                    {[...Array(15)].map((_, i) => (
+                        <div key={i} className="ember" style={{ 
+                            left: Math.random() * 100 + 'vw', 
+                            animationDelay: Math.random() * 5 + 's',
+                            width: Math.random() * 5 + 2 + 'px',
+                            height: Math.random() * 5 + 2 + 'px'
+                        }}></div>
+                    ))}
+
+                    <div className="w-full max-w-4xl no-print">
+                        <header className="text-center mb-8">
+                            <h1 className="text-4xl md:text-6xl font-bold gold-shimmer mb-2">Создатель Героя</h1>
+                            <p className="text-gray-400 italic font-serif">Твой путь в Подземелья начинается здесь...</p>
+                        </header>
+
+                        <div className="mb-8">
+                            <div className="flex justify-between text-xs text-gold-500 mb-2 px-1">
+                                {['Раса', 'Класс', 'Характеристики', 'Личность', 'Финал'].map((s, i) => (
+                                    <span key={i} className={step > i ? 'text-yellow-500' : 'text-gray-600'}>
+                                        {step > i + 1 ? '✓ ' : ''}{s}
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="progress-bar">
+                                <div className="progress-fill" style={{ width: `${(step/5)*100}%` }}></div>
+                            </div>
+                        </div>
+
+                        {step === 1 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
+                                {RACES.map(r => (
+                                    <div 
+                                        key={r.id}
+                                        onClick={() => setChar({...char, race: r})}
+                                        className={`parchment p-4 cursor-pointer card-glow rounded-lg text-center transition-all ${char.race?.id === r.id ? 'selected-card' : 'opacity-80'}`}
+                                    >
+                                        <div className="w-16 h-16 mx-auto mb-3 rounded-full border-2 border-amber-900 flex items-center justify-center" style={{ backgroundColor: r.color }}>
+                                            <i className="fa-solid fa-user-tag text-2xl text-amber-900"></i>
+                                        </div>
+                                        <h3 className="font-bold text-xl mb-1">{r.name}</h3>
+                                        <p className="text-xs italic leading-tight">{r.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {step === 2 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                                {CLASSES.map(c => (
+                                    <div 
+                                        key={c.id}
+                                        onClick={() => setChar({...char, class: c})}
+                                        className={`parchment p-4 cursor-pointer card-glow rounded-lg text-center transition-all ${char.class?.id === c.id ? 'selected-card' : 'opacity-80'}`}
+                                    >
+                                        <div className="text-3xl mb-3 text-amber-900">
+                                            <i className={`fa-solid ${c.icon}`}></i>
+                                        </div>
+                                        <h3 className="font-bold text-lg mb-1">{c.name}</h3>
+                                        <p className="text-[10px] uppercase font-bold text-amber-800">КЗ: d{c.hitDie}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {step === 3 && (
+                            <div className="parchment p-6 rounded-lg max-w-2xl mx-auto">
+                                <div className="flex justify-between items-center mb-6 border-b border-amber-900 pb-2">
+                                    <h2 className="text-2xl font-bold">Очки характеристик: {char.points}</h2>
+                                    <button 
+                                        onClick={autoRoll}
+                                        className="btn-fancy px-4 py-1 text-xs rounded"
+                                    >
+                                        Авто-распределение <i className="fa-solid fa-dice-d20"></i>
+                                    </button>
+                                </div>
+                                <div className="space-y-6">
+                                    {STATS.map(s => (
+                                        <div key={s} className={`flex items-center justify-between p-2 rounded ${char.class?.prime.includes(s) ? 'bg-yellow-600 bg-opacity-20 border border-yellow-700' : ''}`}>
+                                            <div className="w-1/3">
+                                                <div className="font-bold">{s}</div>
+                                                {char.class?.prime.includes(s) && <div className="text-[10px] text-yellow-800 uppercase">Основная</div>}
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <button onClick={() => updateStat(s, char.stats[s]-1)} className="w-8 h-8 rounded-full bg-amber-900 text-white">-</button>
+                                                <span className="text-2xl font-bold w-6 text-center">{char.stats[s]}</span>
+                                                <button onClick={() => updateStat(s, char.stats[s]+1)} className="w-8 h-8 rounded-full bg-amber-900 text-white">+</button>
+                                            </div>
+                                            <div className="text-xl font-bold text-amber-900 w-12 text-right">
+                                                {Math.floor((char.stats[s] - 10) / 2) >= 0 ? '+' : ''}{Math.floor((char.stats[s] - 10) / 2)}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {step === 4 && (
+                            <div className="parchment p-8 rounded-xl max-w-xl mx-auto text-center space-y-6">
+                                <div>
+                                    <label className="block text-xl font-bold mb-2">Имя Героя</label>
+                                    <input 
+                                        type="text" 
+                                        value={char.name}
+                                        onChange={(e) => setChar({...char, name: e.target.value})}
+                                        placeholder="Напр. Арагорн или Гэндальф"
+                                        className="w-full p-4 bg-transparent border-2 border-amber-900 rounded-lg text-2xl text-center focus:outline-none focus:border-yellow-600"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xl font-bold mb-2">Внешность</label>
+                                    <textarea 
+                                        rows="3"
+                                        value={char.appearance}
+                                        onChange={(e) => setChar({...char, appearance: e.target.value})}
+                                        placeholder="Шрам на левом глазу, плащ цвета индиго..."
+                                        className="w-full p-4 bg-transparent border-2 border-amber-900 rounded-lg text-lg focus:outline-none focus:border-yellow-600"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex justify-between mt-8 max-w-4xl w-full">
+                            {step > 1 && (
+                                <button onClick={prevStep} className="btn-fancy px-8 py-3 rounded-lg">Назад</button>
+                            )}
+                            <div className="flex-grow"></div>
+                            {step < 5 ? (
+                                <button 
+                                    disabled={(step === 1 && !char.race) || (step === 2 && !char.class)}
+                                    onClick={nextStep} 
+                                    className="btn-fancy px-12 py-3 rounded-lg disabled:opacity-50"
+                                >
+                                    Далее
+                                </button>
+                            ) : (
+                                <button onClick={() => window.print()} className="btn-fancy px-12 py-3 rounded-lg">
+                                    Распечатать <i className="fa-solid fa-print ml-2"></i>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {step === 5 && (
+                        <div className="w-full max-w-4xl p-8 parchment rounded shadow-2xl mt-4 border-4 border-double border-amber-900">
+                            <div className="flex justify-between items-start border-b-2 border-amber-900 pb-4 mb-6">
+                                <div>
+                                    <h2 className="text-5xl font-bold uppercase">{char.name || 'Безымянный'}</h2>
+                                    <p className="text-xl italic font-bold text-amber-900">{char.race.name} {char.class.name}</p>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-sm font-bold text-amber-800">УРОВЕНЬ</div>
+                                    <div className="text-4xl font-bold">1</div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-6 gap-4 mb-8">
+                                {STATS.map(s => {
+                                    const mod = Math.floor((char.stats[s] - 10) / 2);
+                                    return (
+                                        <div key={s} className="border-2 border-amber-900 rounded p-2 text-center bg-white bg-opacity-50">
+                                            <div className="text-[10px] font-bold uppercase">{s}</div>
+                                            <div className="text-2xl font-bold">{char.stats[s]}</div>
+                                            <div className="bg-amber-900 text-white rounded-full w-10 h-10 mx-auto flex items-center justify-center mt-1 -mb-6 relative z-10 font-bold border-2 border-amber-200">
+                                                {mod >= 0 ? '+' : ''}{mod}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+                                <div className="space-y-4">
+                                    <div className="border border-amber-900 p-3 rounded">
+                                        <h3 className="font-bold border-b border-amber-800 mb-2 uppercase text-sm">Здоровье и Защита</h3>
+                                        <div className="flex justify-around">
+                                            <div className="text-center">
+                                                <div className="text-[10px] font-bold">КД</div>
+                                                <div className="text-2xl font-bold">{10 + Math.floor((char.stats['Ловкость']-10)/2)}</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-[10px] font-bold">ХП</div>
+                                                <div className="text-2xl font-bold">{char.class.hitDie + Math.floor((char.stats['Телосложение']-10)/2)}</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-[10px] font-bold">БОНУС МАСТ.</div>
+                                                <div className="text-2xl font-bold text-blue-800">+2</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="border border-amber-900 p-3 rounded">
+                                        <h3 className="font-bold border-b border-amber-800 mb-2 uppercase text-sm">Внешний вид</h3>
+                                        <p className="italic text-sm leading-relaxed">{char.appearance || 'Описания пока нет...'}</p>
+                                    </div>
+                                </div>
+                                <div className="border border-amber-900 p-3 rounded">
+                                    <h3 className="font-bold border-b border-amber-800 mb-2 uppercase text-sm">Классовые умения</h3>
+                                    <ul className="text-sm space-y-2">
+                                        {char.class.id === 'fighter' && <li>• Второе дыхание (хил 1d10+1 бонусным действием)</li>}
+                                        {char.class.id === 'wizard' && <li>• Магическое восстановление (возврат ячеек на привале)</li>}
+                                        {char.class.id === 'rogue' && <li>• Скрытая атака (+1d6 урона по цели с преимуществом)</li>}
+                                        <li>• Владение доспехами и оружием согласно классу {char.class.name}</li>
+                                        <li className="text-gray-500 italic mt-4 text-xs">Подробности будут доступны в твоем первом приключении!</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <footer className="mt-12 text-center border-t border-amber-900 pt-4 text-xs italic text-amber-900 no-print">
+                                С любовью на нашу 3-месячную годовщину ❤️ Покори это подземелье!
+                            </footer>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 </body>
 </html>
