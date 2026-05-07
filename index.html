@@ -1,420 +1,350 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DnD Character Creator</title>
-    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Spectral:ital,wght@0,400;0,700;1,400&display=swap');
-
-        body {
-            background-color: #0f0a07;
-            color: #e2d1b0;
-            font-family: 'Spectral', serif;
-            background-image: 
-                radial-gradient(circle at 50% 50%, rgba(45, 30, 20, 0.3) 0%, transparent 100%),
-                url('https://www.transparenttextures.com/patterns/dark-leather.png');
-            overflow-x: hidden;
-        }
-
-        h1, h2, h3, .title-font {
-            font-family: 'Cinzel', serif;
-            letter-spacing: 0.05em;
-        }
-
-        .gold-shimmer {
-            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shimmer 5s infinite linear;
-            background-size: 200% auto;
-        }
-
-        @keyframes shimmer {
-            to { background-position: 200% center; }
-        }
-
-        .parchment {
-            background: #f4e4bc;
-            background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png');
-            color: #2d1e14;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 100px rgba(184, 134, 11, 0.2);
-            border: 2px solid #8b6b23;
-            position: relative;
-        }
-
-        .parchment::before {
-            content: '';
-            position: absolute;
-            top: 5px; left: 5px; right: 5px; bottom: 5px;
-            border: 1px solid #8b6b23;
-            pointer-events: none;
-        }
-
-        .card-glow:hover {
-            box-shadow: 0 0 20px rgba(184, 134, 11, 0.4);
-            transform: translateY(-5px);
-            transition: all 0.3s ease;
-        }
-
-        .selected-card {
-            border: 3px solid #bf953f !important;
-            box-shadow: 0 0 25px rgba(184, 134, 11, 0.6);
-            transform: scale(1.02);
-        }
-
-        .ember {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: #ff4d00;
-            border-radius: 50%;
-            pointer-events: none;
-            filter: blur(1px);
-            opacity: 0;
-            animation: rise 5s infinite ease-out;
-        }
-
-        @keyframes rise {
-            0% { transform: translateY(100vh) scale(1); opacity: 0; }
-            20% { opacity: 0.8; }
-            100% { transform: translateY(-100px) translateX(100px) scale(0); opacity: 0; }
-        }
-
-        .btn-fancy {
-            background: linear-gradient(135deg, #8b6b23 0%, #bf953f 50%, #8b6b23 100%);
-            border: 1px solid #fcf6ba;
-            color: #2d1e14;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.3);
-        }
-
-        .btn-fancy:hover {
-            filter: brightness(1.1);
-            box-shadow: 0 0 15px rgba(184, 134, 11, 0.5);
-        }
-
-        .progress-bar {
-            height: 4px;
-            background: #2d1e14;
-            border-radius: 2px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #8b6b23, #fcf6ba);
-            transition: width 0.5s ease;
-        }
-
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; color: black; }
-            .parchment { box-shadow: none; border: 1px solid black; background: white; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D&D — Создание героя</title>
+<script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+  #error-container { color: orange; font-size: 16px; margin: 12px; min-height: 120px; overflow-y: auto; border: 1px solid orange; padding: 10px; border-radius: 8px; background-color: #ff96000d; display: none; }
+</style>
 </head>
 <body>
-    <div id="root"></div>
+<div id="artifact_react"></div>
+<div id="error-container"></div>
+<script type="text/babel">
+try {
+function App() {
+  const [step, setStep] = React.useState(0);
+  const [race, setRace] = React.useState(null);
+  const [klass, setKlass] = React.useState(null);
+  const [bg, setBg] = React.useState(null);
+  const [stats, setStats] = React.useState({STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10});
+  const [pointsLeft, setPointsLeft] = React.useState(27);
+  const [name, setName] = React.useState("");
+  const [look, setLook] = React.useState({hair:"",eyes:"",skin:"",trait:""});
+  const [alignment, setAlignment] = React.useState("Нейтрально-добрый");
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  const races = [
+    {id:"human", name:"Человек", icon:"🧑", desc:"Универсалы. +1 ко всем характеристикам. Подходят под любой класс.", bonus:"+1 ко всем", lore:"Амбициозные, адаптивные, живут везде."},
+    {id:"elf", name:"Эльф", icon:"🧝", desc:"Грациозные, ловкие, чувствуют магию. Видят в темноте.", bonus:"+2 Ловкость", lore:"Долгожители, мастера лука и магии."},
+    {id:"dwarf", name:"Дварф", icon:"🧔", desc:"Крепкие воины гор. Стойкие к ядам, мастера кузни.", bonus:"+2 Телосложение", lore:"Гордые, верные, любят золото и эль."},
+    {id:"halfling", name:"Полурослик", icon:"🧒", desc:"Маленькие, удачливые, незаметные. Идеальные плуты.", bonus:"+2 Ловкость", lore:"Жизнерадостные, любят уют и приключения."},
+    {id:"tiefling", name:"Тифлинг", icon:"😈", desc:"Потомки демонов. Рога, хвост, врождённая магия огня.", bonus:"+2 Харизма, +1 Интеллект", lore:"Изгои с дьявольской кровью."},
+    {id:"dragonborn", name:"Драконорождённый", icon:"🐲", desc:"Чешуя, дыхание стихии (огонь/лёд/яд). Гордые воины.", bonus:"+2 Сила, +1 Харизма", lore:"Потомки драконов, чтят честь."},
+    {id:"halforc", name:"Полуорк", icon:"👹", desc:"Сильные, свирепые. В критический момент не падают от удара.", bonus:"+2 Сила, +1 Телосложение", lore:"Между двух миров, доказывают силу делом."},
+    {id:"gnome", name:"Гном", icon:"🧙", desc:"Маленькие изобретатели и маги. Хитрые и любопытные.", bonus:"+2 Интеллект", lore:"Обожают механизмы, иллюзии и шутки."},
+  ];
 
-        const RACES = [
-            { id: 'human', name: 'Человек', desc: '+1 ко всем характеристикам. Самая универсальная раса.', color: '#d2b48c' },
-            { id: 'elf', name: 'Эльф', desc: '+2 Ловкость, ночное зрение, сопротивление к очарованию.', color: '#90ee90' },
-            { id: 'dwarf', name: 'Дварф', desc: '+2 Телосложение, ночное зрение, устойчивость к яду.', color: '#cd853f' },
-            { id: 'halfling', name: 'Полурослик', desc: '+2 Ловкость, удачливость (переброс 1 на кубике).', color: '#ffebcd' },
-            { id: 'dragonborn', name: 'Драконорожденный', desc: '+2 Сила, +1 Харизма. Дыхание стихией.', color: '#b22222' },
-            { id: 'tiefling', name: 'Тифлинг', desc: '+2 Харизма, +1 Интеллект. Сопротивление огню.', color: '#4b0082' },
-            { id: 'gnome', name: 'Гном', desc: '+2 Интеллект, ночное зрение, хитрость гномов.', color: '#5f9ea0' },
-            { id: 'half-orc', name: 'Полуорк', desc: '+2 Сила, +1 Телосложение. Невероятная стойкость.', color: '#556b2f' }
-        ];
+  const classes = [
+    {id:"fighter", name:"Воин", icon:"⚔️", desc:"Мастер оружия и брони. Просто, надёжно, мощно.", can:["Бьёт всех подряд мечом/луком","Носит латы","Доп. атаки за раунд","Второе дыхание — лечит себя"], stat:"Сила или Ловкость", hp:"10"},
+    {id:"wizard", name:"Волшебник", icon:"🧙‍♂️", desc:"Учёный маг. Книга заклинаний, огненные шары, телепорты.", can:["Огненный шар 🔥","Магическая стрела","Щит, невидимость","Учит новые заклинания из книг"], stat:"Интеллект", hp:"6"},
+    {id:"rogue", name:"Плут", icon:"🗡️", desc:"Скрытность, кинжалы в спину, взлом замков, ловушки.", can:["Скрытая атака (огромный урон)","Воровство, взлом","Уклонение","Скрытность в тени"], stat:"Ловкость", hp:"8"},
+    {id:"cleric", name:"Жрец", icon:"✨", desc:"Слуга бога. Лечит, бьёт нежить, бафает команду.", can:["Лечение ран","Изгнание нежити","Благословение союзников","Боевая магия света"], stat:"Мудрость", hp:"8"},
+    {id:"ranger", name:"Следопыт", icon:"🏹", desc:"Охотник, лучник, друг природы и зверей.", can:["Стрельба из лука","Спутник-зверь 🐺","Следопытство","Природная магия"], stat:"Ловкость + Мудрость", hp:"10"},
+    {id:"barbarian", name:"Варвар", icon:"🪓", desc:"Ярость! Безумный урон, тонна HP, никаких правил.", can:["Ярость (+урон, -урон по тебе)","Гигантский топор","Безрассудная атака","Не падает от одного удара"], stat:"Сила", hp:"12"},
+    {id:"bard", name:"Бард", icon:"🎵", desc:"Музыкант-маг. Вдохновляет, обманывает, очаровывает.", can:["Вдохновение союзников","Очарование","Лечение песней","Знает понемногу всего"], stat:"Харизма", hp:"8"},
+    {id:"paladin", name:"Паладин", icon:"🛡️", desc:"Святой воин. Клятва, божественный урон, аура защиты.", can:["Божественная кара (бонус-урон)","Возложение рук (лечение)","Аура защиты для союзников","Тяжёлая броня"], stat:"Сила + Харизма", hp:"10"},
+    {id:"warlock", name:"Колдун", icon:"👁️", desc:"Заключил пакт с потусторонней силой. Тёмная магия.", can:["Магический луч (основная атака)","Договор с покровителем","Проклятия","Призыв фамильяра"], stat:"Харизма", hp:"8"},
+    {id:"druid", name:"Друид", icon:"🌿", desc:"Маг природы. Превращается в зверей.", can:["Превращение в животное 🐻","Магия природы","Лечение","Управление стихиями"], stat:"Мудрость", hp:"8"},
+  ];
 
-        const CLASSES = [
-            { id: 'fighter', name: 'Воин', icon: 'fa-shield-halved', hitDie: 10, prime: 'Сила', desc: 'Мастер оружия и доспехов. Идеально для начала.' },
-            { id: 'wizard', name: 'Волшебник', icon: 'fa-hat-wizard', hitDie: 6, prime: 'Интеллект', desc: 'Могущественный маг, изучающий заклинания по книгам.' },
-            { id: 'rogue', name: 'Плут', icon: 'fa-mask', hitDie: 8, prime: 'Ловкость', desc: 'Мастер скрытности и точных ударов в спину.' },
-            { id: 'cleric', name: 'Жрец', icon: 'fa-cross', hitDie: 8, prime: 'Мудрость', desc: 'Божественный целитель и защитник союзников.' },
-            { id: 'barbarian', name: 'Варвар', icon: 'fa-axe', hitDie: 12, prime: 'Сила', desc: 'Яростный боец с огромным запасом здоровья.' },
-            { id: 'paladin', name: 'Паладин', icon: 'fa-shield-heart', hitDie: 10, prime: 'Сила/Харизма', desc: 'Святой рыцарь, сочетающий меч и магию.' },
-            { id: 'ranger', name: 'Следопыт', icon: 'fa-bow-arrow', hitDie: 10, prime: 'Ловкость/Мудрость', desc: 'Охотник, эксперт по выживанию в дикой природе.' },
-            { id: 'bard', name: 'Бард', icon: 'fa-music', hitDie: 8, prime: 'Харизма', desc: 'Музыкант, вдохновляющий друзей и мешающий врагам.' },
-            { id: 'sorcerer', name: 'Чародей', icon: 'fa-wand-magic-sparkles', hitDie: 6, prime: 'Харизма', desc: 'Маг, чья сила заложена в самой крови.' },
-            { id: 'warlock', name: 'Колдун', icon: 'fa-eye', hitDie: 8, prime: 'Харизма', desc: 'Черпает магию из договора с могущественным покровителем.' }
-        ];
+  const backgrounds = [
+    {id:"soldier", name:"Солдат", icon:"🎖️", desc:"Служил в армии. Знает дисциплину и тактику."},
+    {id:"criminal", name:"Преступник", icon:"🃏", desc:"Жил вне закона. Связи в подполье."},
+    {id:"sage", name:"Мудрец", icon:"📚", desc:"Учёный, исследователь древних знаний."},
+    {id:"folk", name:"Простолюдин", icon:"🌾", desc:"Из деревни. Простой, честный, работящий."},
+    {id:"noble", name:"Благородный", icon:"👑", desc:"Из знатного рода. Манеры, связи, деньги."},
+    {id:"outlander", name:"Чужеземец", icon:"🏔️", desc:"Жил в дикой природе. Выживальщик."},
+    {id:"entertainer", name:"Артист", icon:"🎭", desc:"Бард, актёр, акробат. Любимец толпы."},
+    {id:"acolyte", name:"Послушник", icon:"⛪", desc:"Служил в храме. Знает религию."},
+  ];
 
-        const STATS = ['Сила', 'Ловкость', 'Телосложение', 'Интеллект', 'Мудрость', 'Харизма'];
+  const alignments = ["Законно-добрый","Нейтрально-добрый","Хаотично-добрый","Законно-нейтральный","Истинно нейтральный","Хаотично-нейтральный","Законно-злой","Нейтрально-злой","Хаотично-злой"];
 
-        const App = () => {
-            const [step, setStep] = useState(1);
-            const [char, setChar] = useState({
-                name: '',
-                race: null,
-                class: null,
-                stats: { 'Сила': 8, 'Ловкость': 8, 'Телосложение': 8, 'Интеллект': 8, 'Мудрость': 8, 'Харизма': 8 },
-                points: 27,
-                appearance: ''
-            });
+  const cost = {8:0,9:1,10:2,11:3,12:4,13:5,14:7,15:9};
+  function changeStat(key, delta) {
+    const cur = stats[key];
+    const next = cur + delta;
+    if (next < 8 || next > 15) return;
+    const diff = cost[next] - cost[cur];
+    if (pointsLeft - diff < 0) return;
+    setStats({...stats, [key]: next});
+    setPointsLeft(pointsLeft - diff);
+  }
 
-            const nextStep = () => setStep(step + 1);
-            const prevStep = () => setStep(step - 1);
+  function finalStat(key) {
+    let v = stats[key];
+    if (!race) return v;
+    const bonuses = {
+      human:{STR:1,DEX:1,CON:1,INT:1,WIS:1,CHA:1},
+      elf:{DEX:2}, dwarf:{CON:2}, halfling:{DEX:2},
+      tiefling:{CHA:2,INT:1}, dragonborn:{STR:2,CHA:1},
+      halforc:{STR:2,CON:1}, gnome:{INT:2}
+    };
+    return v + (bonuses[race.id]?.[key] || 0);
+  }
+  const mod = (v) => Math.floor((v-10)/2);
+  const modStr = (v) => { const m = mod(v); return m>=0?`+${m}`:`${m}`; };
 
-            const updateStat = (name, val) => {
-                const current = char.stats[name];
-                const cost = val > current ? (val > 13 ? 2 : 1) : (current > 13 ? 2 : 1);
-                const newPoints = val > current ? char.points - cost : char.points + cost;
+  const statNames = {STR:"Сила",DEX:"Ловкость",CON:"Телосложение",INT:"Интеллект",WIS:"Мудрость",CHA:"Харизма"};
+  const statDesc = {
+    STR:"Физ. урон, поднимать тяжести",
+    DEX:"Ловкость, стрельба, скрытность, инициатива",
+    CON:"HP, выносливость",
+    INT:"Знания, магия волшебника",
+    WIS:"Восприятие, магия жреца/друида",
+    CHA:"Убеждение, магия барда/колдуна/паладина"
+  };
 
-                if (newPoints >= 0 && val >= 8 && val <= 15) {
-                    setChar({...char, stats: {...char.stats, [name]: val}, points: newPoints});
-                }
-            };
+  const steps = ["Раса","Класс","Характеристики","Предыстория","Внешность","Лист"];
+  const card = "rounded-xl border-2 cursor-pointer transition-all p-4 hover:scale-105";
+  const bgPaper = {background:"linear-gradient(135deg,#f5e6c8 0%,#e8d4a8 100%)"};
 
-            const autoRoll = () => {
-                if (!char.class) return;
-                const scores = [15, 14, 13, 12, 10, 8];
-                const prime = char.class.prime.split('/')[0];
-                const newStats = {};
+  const canNext = () => {
+    if (step===0) return !!race;
+    if (step===1) return !!klass;
+    if (step===2) return pointsLeft===0;
+    if (step===3) return !!bg;
+    if (step===4) return name.trim().length>0;
+    return true;
+  };
 
-                newStats[prime] = 15;
-                const remainingStats = STATS.filter(s => s !== prime);
-                const remainingScores = [14, 13, 12, 10, 8];
+  function StepHeader() {
+    return (
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+        {steps.map((s,i)=>(
+          <div key={i} className={"flex items-center gap-2 " + (i===step?"text-amber-900 font-bold":"text-amber-700 opacity-60")}>
+            <div className={"w-8 h-8 rounded-full flex items-center justify-center border-2 " + (i<=step?"bg-amber-700 text-amber-50 border-amber-900":"bg-amber-100 border-amber-400")}>{i+1}</div>
+            <span className="text-sm hidden md:inline">{s}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-                remainingStats.forEach((s, i) => {
-                    newStats[s] = remainingScores[i];
-                });
+  return (
+    <div className="min-h-screen p-4 md:p-8" style={{background:"radial-gradient(circle at top,#3a2418,#1a0f08)",fontFamily:"Georgia, serif"}}>
+      <div className="max-w-5xl mx-auto rounded-2xl shadow-2xl p-6 md:p-10" style={bgPaper}>
+        <div className="text-center mb-6">
+          <h1 className="text-3xl md:text-5xl font-bold text-amber-900" style={{fontFamily:"Georgia, serif",textShadow:"2px 2px 0 #c9a66b"}}>⚔ Создание героя ⚔</h1>
+          <p className="text-amber-800 italic mt-2">Dungeons & Dragons — Лист персонажа</p>
+        </div>
+        <StepHeader />
 
-                setChar({...char, stats: newStats, points: 0});
-            };
-
-            return (
-                <div className="min-h-screen p-4 md:p-8 flex flex-col items-center">
-                    {/* Эмберы на фоне */}
-                    {[...Array(15)].map((_, i) => (
-                        <div key={i} className="ember" style={{ 
-                            left: Math.random() * 100 + 'vw', 
-                            animationDelay: Math.random() * 5 + 's',
-                            width: Math.random() * 5 + 2 + 'px',
-                            height: Math.random() * 5 + 2 + 'px'
-                        }}></div>
-                    ))}
-
-                    <div className="w-full max-w-4xl no-print">
-                        <header className="text-center mb-8">
-                            <h1 className="text-4xl md:text-6xl font-bold gold-shimmer mb-2">Создатель Героя</h1>
-                            <p className="text-gray-400 italic font-serif">Твой путь в Подземелья начинается здесь...</p>
-                        </header>
-
-                        <div className="mb-8">
-                            <div className="flex justify-between text-xs text-gold-500 mb-2 px-1">
-                                {['Раса', 'Класс', 'Характеристики', 'Личность', 'Финал'].map((s, i) => (
-                                    <span key={i} className={step > i ? 'text-yellow-500' : 'text-gray-600'}>
-                                        {step > i + 1 ? '✓ ' : ''}{s}
-                                    </span>
-                                ))}
-                            </div>
-                            <div className="progress-bar">
-                                <div className="progress-fill" style={{ width: `${(step/5)*100}%` }}></div>
-                            </div>
-                        </div>
-
-                        {step === 1 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
-                                {RACES.map(r => (
-                                    <div 
-                                        key={r.id}
-                                        onClick={() => setChar({...char, race: r})}
-                                        className={`parchment p-4 cursor-pointer card-glow rounded-lg text-center transition-all ${char.race?.id === r.id ? 'selected-card' : 'opacity-80'}`}
-                                    >
-                                        <div className="w-16 h-16 mx-auto mb-3 rounded-full border-2 border-amber-900 flex items-center justify-center" style={{ backgroundColor: r.color }}>
-                                            <i className="fa-solid fa-user-tag text-2xl text-amber-900"></i>
-                                        </div>
-                                        <h3 className="font-bold text-xl mb-1">{r.name}</h3>
-                                        <p className="text-xs italic leading-tight">{r.desc}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {step === 2 && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                                {CLASSES.map(c => (
-                                    <div 
-                                        key={c.id}
-                                        onClick={() => setChar({...char, class: c})}
-                                        className={`parchment p-4 cursor-pointer card-glow rounded-lg text-center transition-all ${char.class?.id === c.id ? 'selected-card' : 'opacity-80'}`}
-                                    >
-                                        <div className="text-3xl mb-3 text-amber-900">
-                                            <i className={`fa-solid ${c.icon}`}></i>
-                                        </div>
-                                        <h3 className="font-bold text-lg mb-1">{c.name}</h3>
-                                        <p className="text-[10px] uppercase font-bold text-amber-800">КЗ: d{c.hitDie}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {step === 3 && (
-                            <div className="parchment p-6 rounded-lg max-w-2xl mx-auto">
-                                <div className="flex justify-between items-center mb-6 border-b border-amber-900 pb-2">
-                                    <h2 className="text-2xl font-bold">Очки характеристик: {char.points}</h2>
-                                    <button 
-                                        onClick={autoRoll}
-                                        className="btn-fancy px-4 py-1 text-xs rounded"
-                                    >
-                                        Авто-распределение <i className="fa-solid fa-dice-d20"></i>
-                                    </button>
-                                </div>
-                                <div className="space-y-6">
-                                    {STATS.map(s => (
-                                        <div key={s} className={`flex items-center justify-between p-2 rounded ${char.class?.prime.includes(s) ? 'bg-yellow-600 bg-opacity-20 border border-yellow-700' : ''}`}>
-                                            <div className="w-1/3">
-                                                <div className="font-bold">{s}</div>
-                                                {char.class?.prime.includes(s) && <div className="text-[10px] text-yellow-800 uppercase">Основная</div>}
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <button onClick={() => updateStat(s, char.stats[s]-1)} className="w-8 h-8 rounded-full bg-amber-900 text-white">-</button>
-                                                <span className="text-2xl font-bold w-6 text-center">{char.stats[s]}</span>
-                                                <button onClick={() => updateStat(s, char.stats[s]+1)} className="w-8 h-8 rounded-full bg-amber-900 text-white">+</button>
-                                            </div>
-                                            <div className="text-xl font-bold text-amber-900 w-12 text-right">
-                                                {Math.floor((char.stats[s] - 10) / 2) >= 0 ? '+' : ''}{Math.floor((char.stats[s] - 10) / 2)}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {step === 4 && (
-                            <div className="parchment p-8 rounded-xl max-w-xl mx-auto text-center space-y-6">
-                                <div>
-                                    <label className="block text-xl font-bold mb-2">Имя Героя</label>
-                                    <input 
-                                        type="text" 
-                                        value={char.name}
-                                        onChange={(e) => setChar({...char, name: e.target.value})}
-                                        placeholder="Напр. Арагорн или Гэндальф"
-                                        className="w-full p-4 bg-transparent border-2 border-amber-900 rounded-lg text-2xl text-center focus:outline-none focus:border-yellow-600"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xl font-bold mb-2">Внешность</label>
-                                    <textarea 
-                                        rows="3"
-                                        value={char.appearance}
-                                        onChange={(e) => setChar({...char, appearance: e.target.value})}
-                                        placeholder="Шрам на левом глазу, плащ цвета индиго..."
-                                        className="w-full p-4 bg-transparent border-2 border-amber-900 rounded-lg text-lg focus:outline-none focus:border-yellow-600"
-                                    ></textarea>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="flex justify-between mt-8 max-w-4xl w-full">
-                            {step > 1 && (
-                                <button onClick={prevStep} className="btn-fancy px-8 py-3 rounded-lg">Назад</button>
-                            )}
-                            <div className="flex-grow"></div>
-                            {step < 5 ? (
-                                <button 
-                                    disabled={(step === 1 && !char.race) || (step === 2 && !char.class)}
-                                    onClick={nextStep} 
-                                    className="btn-fancy px-12 py-3 rounded-lg disabled:opacity-50"
-                                >
-                                    Далее
-                                </button>
-                            ) : (
-                                <button onClick={() => window.print()} className="btn-fancy px-12 py-3 rounded-lg">
-                                    Распечатать <i className="fa-solid fa-print ml-2"></i>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {step === 5 && (
-                        <div className="w-full max-w-4xl p-8 parchment rounded shadow-2xl mt-4 border-4 border-double border-amber-900">
-                            <div className="flex justify-between items-start border-b-2 border-amber-900 pb-4 mb-6">
-                                <div>
-                                    <h2 className="text-5xl font-bold uppercase">{char.name || 'Безымянный'}</h2>
-                                    <p className="text-xl italic font-bold text-amber-900">{char.race.name} {char.class.name}</p>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-sm font-bold text-amber-800">УРОВЕНЬ</div>
-                                    <div className="text-4xl font-bold">1</div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-6 gap-4 mb-8">
-                                {STATS.map(s => {
-                                    const mod = Math.floor((char.stats[s] - 10) / 2);
-                                    return (
-                                        <div key={s} className="border-2 border-amber-900 rounded p-2 text-center bg-white bg-opacity-50">
-                                            <div className="text-[10px] font-bold uppercase">{s}</div>
-                                            <div className="text-2xl font-bold">{char.stats[s]}</div>
-                                            <div className="bg-amber-900 text-white rounded-full w-10 h-10 mx-auto flex items-center justify-center mt-1 -mb-6 relative z-10 font-bold border-2 border-amber-200">
-                                                {mod >= 0 ? '+' : ''}{mod}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-                                <div className="space-y-4">
-                                    <div className="border border-amber-900 p-3 rounded">
-                                        <h3 className="font-bold border-b border-amber-800 mb-2 uppercase text-sm">Здоровье и Защита</h3>
-                                        <div className="flex justify-around">
-                                            <div className="text-center">
-                                                <div className="text-[10px] font-bold">КД</div>
-                                                <div className="text-2xl font-bold">{10 + Math.floor((char.stats['Ловкость']-10)/2)}</div>
-                                            </div>
-                                            <div className="text-center">
-                                                <div className="text-[10px] font-bold">ХП</div>
-                                                <div className="text-2xl font-bold">{char.class.hitDie + Math.floor((char.stats['Телосложение']-10)/2)}</div>
-                                            </div>
-                                            <div className="text-center">
-                                                <div className="text-[10px] font-bold">БОНУС МАСТ.</div>
-                                                <div className="text-2xl font-bold text-blue-800">+2</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="border border-amber-900 p-3 rounded">
-                                        <h3 className="font-bold border-b border-amber-800 mb-2 uppercase text-sm">Внешний вид</h3>
-                                        <p className="italic text-sm leading-relaxed">{char.appearance || 'Описания пока нет...'}</p>
-                                    </div>
-                                </div>
-                                <div className="border border-amber-900 p-3 rounded">
-                                    <h3 className="font-bold border-b border-amber-800 mb-2 uppercase text-sm">Классовые умения</h3>
-                                    <ul className="text-sm space-y-2">
-                                        {char.class.id === 'fighter' && <li>• Второе дыхание (хил 1d10+1 бонусным действием)</li>}
-                                        {char.class.id === 'wizard' && <li>• Магическое восстановление (возврат ячеек на привале)</li>}
-                                        {char.class.id === 'rogue' && <li>• Скрытая атака (+1d6 урона по цели с преимуществом)</li>}
-                                        <li>• Владение доспехами и оружием согласно классу {char.class.name}</li>
-                                        <li className="text-gray-500 italic mt-4 text-xs">Подробности будут доступны в твоем первом приключении!</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <footer className="mt-12 text-center border-t border-amber-900 pt-4 text-xs italic text-amber-900 no-print">
-                                С любовью на нашу 3-месячную годовщину ❤️ Покори это подземелье!
-                            </footer>
-                        </div>
-                    )}
+        {step===0 && (
+          <div>
+            <h2 className="text-2xl font-bold text-amber-900 mb-2">Шаг 1. Выбери расу</h2>
+            <p className="text-amber-800 mb-4 italic">Раса определяет внешность, базовые бонусы и особенности твоего героя.</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {races.map(r=>(
+                <div key={r.id} onClick={()=>setRace(r)} className={card} style={{borderColor: race?.id===r.id?"#7c2d12":"#c9a66b", background: race?.id===r.id?"#fde68a":"#fef3c7"}}>
+                  <div className="text-4xl text-center">{r.icon}</div>
+                  <div className="font-bold text-center text-amber-900 mt-1">{r.name}</div>
+                  <div className="text-xs text-amber-800 mt-2">{r.desc}</div>
+                  <div className="text-xs font-bold text-red-800 mt-2">⚡ {r.bonus}</div>
                 </div>
-            );
-        };
+              ))}
+            </div>
+            {race && (
+              <div className="mt-4 p-4 rounded-lg bg-amber-100 border-2 border-amber-700">
+                <div className="font-bold text-amber-900">{race.icon} {race.name}</div>
+                <div className="text-sm text-amber-800 italic">{race.lore}</div>
+              </div>
+            )}
+          </div>
+        )}
 
-        ReactDOM.render(<App />, document.getElementById('root'));
-    </script>
+        {step===1 && (
+          <div>
+            <h2 className="text-2xl font-bold text-amber-900 mb-2">Шаг 2. Выбери класс</h2>
+            <p className="text-amber-800 mb-4 italic">Класс — это профессия героя. Что он умеет в бою и приключении.</p>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {classes.map(c=>(
+                <div key={c.id} onClick={()=>setKlass(c)} className={card} style={{borderColor: klass?.id===c.id?"#7c2d12":"#c9a66b", background: klass?.id===c.id?"#fde68a":"#fef3c7"}}>
+                  <div className="text-4xl text-center">{c.icon}</div>
+                  <div className="font-bold text-center text-amber-900 mt-1">{c.name}</div>
+                  <div className="text-xs text-amber-800 mt-2">{c.desc}</div>
+                </div>
+              ))}
+            </div>
+            {klass && (
+              <div className="mt-4 p-4 rounded-lg bg-amber-100 border-2 border-amber-700">
+                <div className="font-bold text-amber-900 text-lg">{klass.icon} {klass.name}</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                  <div>
+                    <div className="text-xs font-bold text-amber-900">ЧТО УМЕЕТ:</div>
+                    <ul className="text-sm text-amber-800 list-disc pl-5">
+                      {klass.can.map((x,i)=><li key={i}>{x}</li>)}
+                    </ul>
+                  </div>
+                  <div className="text-sm text-amber-800">
+                    <div><b>Главная характеристика:</b> {klass.stat}</div>
+                    <div><b>Кость хитов:</b> d{klass.hp}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {step===2 && (
+          <div>
+            <h2 className="text-2xl font-bold text-amber-900 mb-2">Шаг 3. Характеристики</h2>
+            <p className="text-amber-800 mb-2 italic">27 очков на распределение. Базово все по 8. Вкачай главную стату класса до 15!</p>
+            <div className="text-center mb-4 text-xl font-bold text-red-800">Очков осталось: {pointsLeft}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {Object.keys(stats).map(k=>(
+                <div key={k} className="p-3 rounded-lg border-2 border-amber-700 bg-amber-50">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="font-bold text-amber-900">{statNames[k]}</div>
+                      <div className="text-xs text-amber-700">{statDesc[k]}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={()=>changeStat(k,-1)} className="w-8 h-8 rounded-full bg-amber-700 text-amber-50 font-bold">−</button>
+                      <div className="text-2xl font-bold text-amber-900 w-10 text-center">{stats[k]}</div>
+                      <button onClick={()=>changeStat(k,1)} className="w-8 h-8 rounded-full bg-amber-700 text-amber-50 font-bold">+</button>
+                    </div>
+                  </div>
+                  <div className="text-xs text-amber-800 mt-1">
+                    Итог с расой: <b>{finalStat(k)}</b> (модификатор <b>{modStr(finalStat(k))}</b>)
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step===3 && (
+          <div>
+            <h2 className="text-2xl font-bold text-amber-900 mb-2">Шаг 4. Предыстория и мировоззрение</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              {backgrounds.map(b=>(
+                <div key={b.id} onClick={()=>setBg(b)} className={card} style={{borderColor: bg?.id===b.id?"#7c2d12":"#c9a66b", background: bg?.id===b.id?"#fde68a":"#fef3c7"}}>
+                  <div className="text-3xl text-center">{b.icon}</div>
+                  <div className="font-bold text-center text-amber-900 mt-1">{b.name}</div>
+                  <div className="text-xs text-amber-800 mt-1">{b.desc}</div>
+                </div>
+              ))}
+            </div>
+            <div className="p-3 rounded-lg border-2 border-amber-700 bg-amber-50">
+              <div className="font-bold text-amber-900 mb-2">Мировоззрение:</div>
+              <div className="grid grid-cols-3 gap-2">
+                {alignments.map(a=>(
+                  <button key={a} onClick={()=>setAlignment(a)} className="p-2 rounded text-sm" style={{background:alignment===a?"#7c2d12":"#fef3c7",color:alignment===a?"#fef3c7":"#7c2d12",border:"1px solid #7c2d12"}}>{a}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step===4 && (
+          <div>
+            <h2 className="text-2xl font-bold text-amber-900 mb-2">Шаг 5. Имя и внешность</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="block">
+                <span className="text-amber-900 font-bold">Имя героя</span>
+                <input value={name} onChange={e=>setName(e.target.value)} placeholder="напр. Торин Огнебород" className="w-full mt-1 p-2 rounded border-2 border-amber-700 bg-amber-50"/>
+              </label>
+              <label className="block">
+                <span className="text-amber-900 font-bold">Цвет волос</span>
+                <input value={look.hair} onChange={e=>setLook({...look,hair:e.target.value})} placeholder="напр. чёрные длинные" className="w-full mt-1 p-2 rounded border-2 border-amber-700 bg-amber-50"/>
+              </label>
+              <label className="block">
+                <span className="text-amber-900 font-bold">Цвет глаз</span>
+                <input value={look.eyes} onChange={e=>setLook({...look,eyes:e.target.value})} placeholder="напр. зелёные" className="w-full mt-1 p-2 rounded border-2 border-amber-700 bg-amber-50"/>
+              </label>
+              <label className="block">
+                <span className="text-amber-900 font-bold">Особенности внешности</span>
+                <input value={look.skin} onChange={e=>setLook({...look,skin:e.target.value})} placeholder="напр. бледная, шрам на щеке" className="w-full mt-1 p-2 rounded border-2 border-amber-700 bg-amber-50"/>
+              </label>
+              <label className="block md:col-span-2">
+                <span className="text-amber-900 font-bold">Черта характера</span>
+                <input value={look.trait} onChange={e=>setLook({...look,trait:e.target.value})} placeholder="напр. всегда жуёт травинку, никому не доверяет" className="w-full mt-1 p-2 rounded border-2 border-amber-700 bg-amber-50"/>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {step===5 && (
+          <div>
+            <h2 className="text-3xl font-bold text-amber-900 mb-4 text-center">📜 Лист персонажа 📜</h2>
+            <div className="border-4 border-amber-900 rounded-lg p-6 bg-amber-50">
+              <div className="text-center border-b-2 border-amber-700 pb-3 mb-4">
+                <div className="text-3xl font-bold text-amber-900">{name || "Безымянный герой"}</div>
+                <div className="text-amber-800">{race?.icon} {race?.name} • {klass?.icon} {klass?.name} • 1 уровень</div>
+                <div className="text-sm text-amber-700 italic">{bg?.name} • {alignment}</div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-4">
+                {Object.keys(stats).map(k=>(
+                  <div key={k} className="text-center p-2 rounded border-2 border-amber-700 bg-amber-100">
+                    <div className="text-xs font-bold text-amber-900">{statNames[k]}</div>
+                    <div className="text-2xl font-bold text-red-800">{modStr(finalStat(k))}</div>
+                    <div className="text-sm text-amber-800">{finalStat(k)}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-3 rounded border-2 border-amber-700 bg-amber-100">
+                  <div className="font-bold text-amber-900 mb-1">⚔ Способности класса</div>
+                  <ul className="text-sm text-amber-800 list-disc pl-5">
+                    {klass?.can.map((x,i)=><li key={i}>{x}</li>)}
+                  </ul>
+                </div>
+                <div className="p-3 rounded border-2 border-amber-700 bg-amber-100">
+                  <div className="font-bold text-amber-900 mb-1">🎭 Внешность</div>
+                  <div className="text-sm text-amber-800">
+                    <div><b>Волосы:</b> {look.hair||"—"}</div>
+                    <div><b>Глаза:</b> {look.eyes||"—"}</div>
+                    <div><b>Особенности:</b> {look.skin||"—"}</div>
+                    <div><b>Черта:</b> {look.trait||"—"}</div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <div className="text-center p-2 rounded border-2 border-amber-700 bg-amber-100">
+                  <div className="text-xs text-amber-900">HP</div>
+                  <div className="text-xl font-bold text-red-800">{klass ? parseInt(klass.hp) + mod(finalStat("CON")) : "—"}</div>
+                </div>
+                <div className="text-center p-2 rounded border-2 border-amber-700 bg-amber-100">
+                  <div className="text-xs text-amber-900">Инициатива</div>
+                  <div className="text-xl font-bold text-red-800">{modStr(finalStat("DEX"))}</div>
+                </div>
+                <div className="text-center p-2 rounded border-2 border-amber-700 bg-amber-100">
+                  <div className="text-xs text-amber-900">Бонус мастерства</div>
+                  <div className="text-xl font-bold text-red-800">+2</div>
+                </div>
+              </div>
+              <div className="text-center mt-6 italic text-amber-700 text-lg">
+                ✦ С 3 месяцами вместе! Удачи в первом приключении, герой! ✦
+              </div>
+            </div>
+            <div className="text-center mt-4 flex gap-2 justify-center flex-wrap">
+              <button onClick={()=>window.print()} className="px-4 py-2 rounded bg-amber-900 text-amber-50 font-bold">🖨 Распечатать</button>
+              <button onClick={()=>{setStep(0);setRace(null);setKlass(null);setBg(null);setStats({STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10});setPointsLeft(27);setName("");setLook({hair:"",eyes:"",skin:"",trait:""});}} className="px-4 py-2 rounded bg-amber-700 text-amber-50 font-bold">↺ Начать заново</button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-between mt-6">
+          <button onClick={()=>setStep(Math.max(0,step-1))} disabled={step===0} className="px-5 py-2 rounded bg-amber-800 text-amber-50 font-bold disabled:opacity-30">← Назад</button>
+          {step<5 && <button onClick={()=>setStep(step+1)} disabled={!canNext()} className="px-5 py-2 rounded bg-red-900 text-amber-50 font-bold disabled:opacity-30">Далее →</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('artifact_react'));
+} catch(error) {
+  const errorContainer = document.getElementById('error-container');
+  errorContainer.style.display = 'block';
+  errorContainer.textContent = 'Ошибка: ' + error.message;
+}
+</script>
 </body>
 </html>
